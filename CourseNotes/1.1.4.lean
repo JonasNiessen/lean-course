@@ -94,8 +94,6 @@ in the fun, with the anonymous constructor:
 
 example : (∃ x, P x ∧ Q x) → ∃ x, Q x := fun ⟨w, hw⟩ => ⟨w, hw.2⟩
 
-example : ∃ n : Nat, n * n = 16 := sorry
-
 example : (∀ x, P x → Q x) → (∃ x, P x) → ∃ x, Q x := sorry
 
 example : (∃ x, P x ∨ Q x) ↔ (∃ x, P x) ∨ (∃ x, Q x) := sorry
