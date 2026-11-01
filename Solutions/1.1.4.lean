@@ -25,7 +25,8 @@ example (h : ∀ x, P x) (a : α) : P a := h a
 
 example (h : ∀ x, P x ∧ Q x) : ∀ x, P x := fun x => (h x).1
 
-example : (∀ x, P x → Q x) → (∀ x, P x) → ∀ x, Q x := sorry
+example : (∀ x, P x → Q x) → (∀ x, P x) → ∀ x, Q x :=
+  fun hPQ => (fun hP => (fun x => (hPQ x) (hP x)))
 
 example : (∀ x, P x ∧ Q x) ↔ (∀ x, P x) ∧ (∀ x, Q x) := sorry
 
@@ -94,11 +95,13 @@ in the fun, with the anonymous constructor:
 
 example : (∃ x, P x ∧ Q x) → ∃ x, Q x := fun ⟨w, hw⟩ => ⟨w, hw.2⟩
 
-example : ∃ n : Nat, n * n = 16 := sorry
-
 example : (∀ x, P x → Q x) → (∃ x, P x) → ∃ x, Q x := sorry
 
-example : (∃ x, P x ∨ Q x) ↔ (∃ x, P x) ∨ (∃ x, Q x) := sorry
+example : (∃ x, P x ∨ Q x) ↔ (∃ x, P x) ∨ (∃ x, Q x) :=
+  ⟨fun hPQ => Exists.elim hPQ (fun a hPQa => Or.elim hPQa (fun hP =>
+  Or.inl ⟨a, hP⟩) (fun hQ => Or.inr ⟨a, hQ⟩)),
+  fun hPQ => Or.elim hPQ (fun ⟨a, hPa⟩ => ⟨a, Or.inl hPa⟩) (fun ⟨a,
+  hQa⟩ => ⟨a, Or.inr hQa⟩)⟩
 
 example : (¬∃ x, P x) ↔ ∀ x, ¬P x := sorry
 
@@ -121,9 +124,13 @@ example (h : ¬¬p) : p :=
 
 example (h : ¬¬p) : p := Classical.byContradiction (fun hnp => h hnp)
 
-example : (¬q → ¬p) → (p → q) := sorry
+example : (¬q → ¬p) → (p → q) :=
+  fun hqp => (fun hp => Or.elim (Classical.em q) (fun hq => hq) (fun
+  hnq => ( False.elim (hqp hnq hp) ) ))
 
-example : (p → q) → ¬p ∨ q := sorry
+example : (p → q) → ¬p ∨ q :=
+  fun hpq => Or.elim (Classical.em p) (fun hp => Or.inr (hpq hp))
+  (fun hnp => Or.inl hnp)
 
 example : ¬(p ∧ q) → ¬p ∨ ¬q := sorry
 
@@ -168,7 +175,7 @@ The subscripts in h₁ are typed \1, \2, and so on.
     that take care of these things for us.
 -/
 
-example (a b c : α) (h₁ : a = b) (h₂ : c = b) : a = c := sorry
+example (a b c : α) (h₁ : a = b) (h₂ : c = b) : a = c := h₂.symm ▸ h₁
 
 example (a b : α) (h : a = b) (hb : P b) : P a := sorry
 
@@ -178,7 +185,7 @@ example (f : α → α) (hf : ∀ x, f x = x) (a b : α) (h : a = b) :
     f a = b := sorry
 
 example (f : α → α) (hf : ∀ x, f x = x) (a : α) (ha : P a) :
-    P (f a) := sorry
+    P (f a) := (hf a).symm ▸ ha
 
 /-
     (**) How is = defined in Lean? Hover over = or try #print Eq. You

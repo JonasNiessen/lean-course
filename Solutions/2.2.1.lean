@@ -51,10 +51,14 @@ the collection of all the sets containing s. Define it:
 -/
 
 def principal₁ {α : Type*} (s : Set α) : Filter₁ α where
-  sets := sorry
-  univ_sets := sorry
-  sets_of_superset := sorry
-  inter_sets := sorry
+  sets := { t | s ⊆ t }
+  univ_sets := by simp
+  sets_of_superset := by
+    intro t1 t2 ht1 ht12
+    exact subset_trans ht1 ht12
+  inter_sets := by
+    intro t1 t2 ht1 ht2 x hx
+    exact ⟨ht1 hx, ht2 hx⟩
 
 /-
 From now on we use the filters of mathlib, Filter α, which are
@@ -107,11 +111,19 @@ all, in the axiom inter_sets.
 -/
 
 example : ∀ᶠ n in atTop, 2 * n ≥ n + 5 := by
-  sorry
+  rw [eventually_atTop]
+  use 10
+  intro b hb
+  grind
 
 example (P Q : ℕ → Prop) (hP : ∀ᶠ n in atTop, P n) (hPQ : ∀ n, P n → Q n) :
     ∀ᶠ n in atTop, Q n := by
-  sorry
+  rw [eventually_atTop]
+  rw [eventually_atTop] at hP
+  obtain ⟨N, h⟩ := hP
+  use N
+  intro b hb
+  exact (hPQ b) (h b hb)
 
 example (P Q R : ℕ → Prop) (hP : ∀ᶠ n in atTop, P n) (hQ : ∀ᶠ n in atTop, Q n)
     (h : ∀ n, P n → Q n → R n) : ∀ᶠ n in atTop, R n := by

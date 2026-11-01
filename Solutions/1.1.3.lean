@@ -220,4 +220,7 @@ example : (p → q → r) ↔ (p ∧ q → r) := sorry
 
 example : (p ∨ q → r) ↔ (p → r) ∧ (q → r) := sorry
 
-example : ¬(p ∨ q) ↔ ¬p ∧ ¬q := sorry
+example : ¬(p ∨ q) ↔ ¬p ∧ ¬q :=
+  ⟨fun h => ⟨fun hp => h (Or.inl hp), fun hq => h (Or.inr hq)⟩,
+    fun ⟨hnp, hnq⟩ => (fun hpq => Or.elim hpq (fun hp => hnp hp) (fun
+    hq => hnq hq))⟩
