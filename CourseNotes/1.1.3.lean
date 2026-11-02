@@ -205,9 +205,9 @@ example : True := trivial
 
 example (hp : p) (hnp : ¬p) : q := False.elim (hnp hp)
 
-example : False → p :=
+example : False → p := fun h => False.elim h
 
-example : p → ¬¬p := sorry
+example : p → ¬¬p := fun hp hn
 
 example : (p → q) → ¬q → ¬p := sorry
 
