@@ -76,7 +76,7 @@ is also how exercises in this course are presented: replace each
 sorry by an actual proof.
 -/
 
-example : 2 + 2 = 4 := sorry   -- Lean accepts this, with a warning!
+example : 2 + 2 = 4 := rfl   -- Lean accepts this, with a warning!
 
 /-
 sorry is actually an axiom, called sorryAx, which proves
@@ -132,9 +132,9 @@ fun h => fun hq => fun hp => ..., and that p → q → r means
 p → (q → r).
 -/
 
-example : (p → q) → (q → r) → (p → r) := sorry
+example : (p → q) → (q → r) → (p → r) := fun hpq => fun hqr => fun hp => hqr (hpq hp)
 
-example : (p → p → q) → p → q := sorry
+example : (p → p → q) → p → q := fun hppq => fun hp => hppq hp hp
 
 /-
 And. To prove p ∧ q, we prove both: given hp : p and hq : q, we get
@@ -147,11 +147,11 @@ example (hp : p) (hq : q) : p ∧ q := ⟨hp, hq⟩
 
 example (h : p ∧ q) : q ∧ p := ⟨h.2, h.1⟩
 
-example : p ∧ (q ∧ r) → (p ∧ q) ∧ r := sorry
+example : p ∧ (q ∧ r) → (p ∧ q) ∧ r := fun h => ⟨ ⟨ h.left,h.right.left⟩ ,h.right.right⟩
 
-example : (p → q → r) → (p ∧ q → r) := sorry
+example : (p → q → r) → (p ∧ q → r) := fun h => fun hpq => h hpq.left hpq.right
 
-example : (p → q) → p ∧ r → q ∧ r := sorry
+example : (p → q) → p ∧ r → q ∧ r := fun h => fun hpr => ⟨h hpr.left,hpr.right⟩
 
 /-
 Or. To prove p ∨ q, we prove one of the two, and we have to say
@@ -164,14 +164,31 @@ Or.elim h (fun hp => ...) (fun hq => ...) : r.
 
 example : p → p ∨ q := fun hp => Or.inl hp
 
-example (h : p ∨ q) : q ∨ p :=
-  Or.elim h (fun hp => Or.inr hp) (fun hq => Or.inl hq)
+example : p ∨ q → q ∨ p :=
+  fun h => h.elim (fun hp => Or.inr hp) (fun hq => Or.inl hq)
 
-example : p ∨ (q ∨ r) → (p ∨ q) ∨ r := sorry
+example : p ∨ (q ∨ r) → (p ∨ q) ∨ r :=
+  fun h =>
+    h.elim
+      (fun hp => Or.inl (Or.inl hp))
+      (fun hqr =>
+      hqr.elim
+        (fun hq => Or.inl (Or.inr hq))
+        (fun hr => Or.inr hr))
 
-example : (p → r) → (q → r) → p ∨ q → r := sorry
+example : (p → r) → (q → r) → p ∨ q → r :=
+  fun hpr =>
+  fun hqr =>
+  fun hpq =>
+  hpq.elim
+    (fun hp => hpr hp)
+    (fun hq => hqr hq)
 
-example : p ∧ (q ∨ r) → (p ∧ q) ∨ (p ∧ r) := sorry
+example : p ∧ (q ∨ r) → (p ∧ q) ∨ (p ∧ r) :=
+   fun h => h.2.elim
+    (fun hq => Or.inl (And.intro h.1 hq))
+    (fun hr => Or.inr (And.intro h.1 hr))
+
 
 /-
 Negation, True, and False. Remember that ¬p is p → False, so it
