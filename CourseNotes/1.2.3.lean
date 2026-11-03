@@ -105,8 +105,15 @@ theorem convergesTo_mul_const {s : ℕ → ℝ} {a : ℝ} (c : ℝ)
     -- Hint: rewrite with h, and use convergesTo_const.
   · have acpos : 0 < |c| := abs_pos.mpr h
     intro ε εpos
-    have ecpos : 0 < ε / |c| := abs_pos.mpr h
-    obtain ⟨Ns, hs⟩ := cs (ε / |c|)
+    have εcpos : 0 < ε / |c| := div_pos εpos acpos
+    obtain ⟨Ns, hs⟩ := cs (ε / |c|) εcpos
+    use Ns
+    intro n hn
+    calc
+      |c * s n - c * a| = |c * (s n - a)| := by ring_nf
+      _ = |c| * |s n - a| := abs_mul _ _
+      _ < |c| * (ε / |c|) := mul_lt_mul_of_pos_left (hs n hn) acpos
+      _ = ε := by field_simp [acpos]
     -- Hint: take ε / |c| in cs. Look for abs_mul and
     -- lt_div_iff₀ (or try exact? at each step).
 
