@@ -1,4 +1,4 @@
-import Mathlib
+import Mathlib.Tactic
 
 /- 1.2.4 Sets and functions -/
 

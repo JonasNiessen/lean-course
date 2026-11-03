@@ -1,4 +1,4 @@
-import Mathlib
+import Mathlib.Tactic
 
 /- 1.2.3 A first glimpse of real math -/
 
@@ -13,7 +13,7 @@ In Lean, this is literally the same:
 -/
 
 def ConvergesTo (s : ℕ → ℝ) (a : ℝ) :=
-  ∀ ε > 0, ∃ N, ∀ n ≥ N, |s n - a| < ε
+  ∀ ε > 0, ∃ (N : ℕ), ∀ n ≥ N, |s n - a| < ε
 
 #check ConvergesTo
 
@@ -50,7 +50,7 @@ theorem convergesTo_add {s t : ℕ → ℝ} {a b : ℝ}
     (cs : ConvergesTo s a) (ct : ConvergesTo t b) :
     ConvergesTo (fun n => s n + t n) (a + b) := by
   intro ε εpos
-  dsimp -- definitional simp; not needed, but it makes the goal more readable
+  /-dsimp -- definitional simp; not needed, but it makes the goal more readable-/
   have ε2pos : 0 < ε / 2 := by linarith
   obtain ⟨Ns, hs⟩ := cs (ε / 2) ε2pos
   obtain ⟨Nt, ht⟩ := ct (ε / 2) ε2pos
@@ -60,7 +60,7 @@ theorem convergesTo_add {s t : ℕ → ℝ} {a b : ℝ}
   have ngeNt : n ≥ Nt := le_of_max_le_right hn
   calc
     |s n + t n - (a + b)| = |s n - a + (t n - b)| := by ring_nf
-    _ ≤ |s n - a| + |t n - b| := abs_add_le _ _
+    _ ≤ |s n - a| + |t n - b| := abs_add_le (s n - a) (t n - b)
     _ < ε / 2 + ε / 2 := add_lt_add (hs n ngeNs) (ht n ngeNt)
     _ = ε := by ring
 
@@ -79,20 +79,36 @@ Now some exercises for you to do:
 
 theorem convergesTo_neg {s : ℕ → ℝ} {a : ℝ} (cs : ConvergesTo s a) :
     ConvergesTo (fun n => -s n) (-a) := by
-  sorry   -- Hint: |-x| = |x| is abs_neg.
+    intro ε εpos
+    obtain ⟨Ns, hs⟩ := cs ε εpos
+    use Ns
+    intro n hn
+    calc
+    |-s n - -a| = |-(s n - a)| := by ring_nf
+    _ = |s n - a| := abs_neg _
+    _ < ε := hs n hn
+    -- Hint: |-x| = |x| is abs_neg.
 
 theorem convergesTo_sub {s t : ℕ → ℝ} {a b : ℝ}
     (cs : ConvergesTo s a) (ct : ConvergesTo t b) :
     ConvergesTo (fun n => s n - t n) (a - b) := by
-  sorry   -- Hint: use the two previous theorems, and sub_eq_add_neg.
+    simp only [sub_eq_add_neg]
+    exact convergesTo_add cs (convergesTo_neg ct)
+    -- Hint: use the two previous theorems, and sub_eq_add_neg.
 
 theorem convergesTo_mul_const {s : ℕ → ℝ} {a : ℝ} (c : ℝ)
     (cs : ConvergesTo s a) : ConvergesTo (fun n => c * s n) (c * a) := by
   by_cases h : c = 0
-  · sorry   -- Hint: rewrite with h, and use convergesTo_const.
+  · rw [h]
+    simp only [zero_mul]
+    exact convergesTo_const 0
+    -- Hint: rewrite with h, and use convergesTo_const.
   · have acpos : 0 < |c| := abs_pos.mpr h
-    sorry   -- Hint: take ε / |c| in cs. Look for abs_mul and
-            -- lt_div_iff₀ (or try exact? at each step).
+    intro ε εpos
+    have ecpos : 0 < ε / |c| := abs_pos.mpr h
+    obtain ⟨Ns, hs⟩ := cs (ε / |c|)
+    -- Hint: take ε / |c| in cs. Look for abs_mul and
+    -- lt_div_iff₀ (or try exact? at each step).
 
 /-
 And a harder one, the uniqueness of limits: if s converges

@@ -1,4 +1,4 @@
-import Mathlib
+import Mathlib.Tactic
 
 /- Day 2: Algebra, analysis, and topology -/
 

@@ -1,4 +1,4 @@
-import Mathlib
+import Mathlib.Tactic
 
 /- 1.2 Tactics and mathlib [MIL, Chapters 2, 3, 4] -/
 

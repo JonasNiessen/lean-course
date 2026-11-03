@@ -1,4 +1,4 @@
-import Mathlib
+import Mathlib.Tactic
 
 /- 1.2.2 Mathematics and mathlib -/
 
@@ -41,11 +41,11 @@ product that you did not intend to.
 -/
 
 example (a b c : ℝ) : c * b * a = b * (a * c) := by
-  sorry
+  rw [mul_comm c b, mul_assoc b c a, mul_comm c a]
 
 example (a b c d : ℝ) (hyp : c = d * a + b) (hyp' : b = a * d) :
     c = 2 * a * d := by
-  sorry
+    linarith
 
 /-
 Proving these identities by hand is instructive, but quickly becomes
@@ -111,18 +111,19 @@ example (a : ℝ) (h : a * 1 + 0 = 5) : a = 5 := by
   exact h
 
 example (a b : ℝ) : a ≤ a + b ^ 2 := by
-  sorry
+  linarith [sq_nonneg (b)]
 
 example (x y : ℝ) (h : x ≤ y) : x - |y| ≤ y + |x| := by
-  sorry   -- Hint: 0 ≤ |x| is abs_nonneg x.
+  linarith [abs_nonneg (x), abs_nonneg (y)] -- Hint: 0 ≤ |x| is abs_nonneg x.
 
 example (a b c : ℝ) (h₁ : a = b + 1) (h₂ : b = 2 * c) (h₃ : c = 1) :
     a * 1 = 3 := by
-  sorry
+    linarith
 
 example (f : ℕ → ℕ) (hf : ∀ n, f n = n + 1) (k : ℕ) (h : f 2 = k) :
     k = 3 := by
-  sorry
+    rw [← h]
+    rw [hf]
 
 /-
 Next, inequalities. a ≤ b is typed using \le.
@@ -174,4 +175,4 @@ How do you find the theorems you need? There are several ways:
 -/
 
 example (a b : ℝ) (h : a ≤ b) : a + 1 ≤ b + 1 := by
-  exact?
+  exact add_le_add_left h 1
