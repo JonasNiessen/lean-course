@@ -75,10 +75,19 @@ example : s ∩ t = t ∩ s := by
     exact ⟨xs, xt⟩
 
 example : s ∩ t ∪ s ∩ u ⊆ s ∩ (t ∪ u) := by
-  sorry
+  rintro x (⟨xs,xt⟩ | ⟨xs,xu⟩)
+  · exact ⟨xs, Or.inl xt⟩
+  · exact ⟨xs, Or.inr xu⟩
+
 
 example : (s \ t) \ u ⊆ s \ (t ∪ u) := by
-  sorry
+  rintro x ⟨xsnt, xnu⟩
+  obtain ⟨xs, xnt⟩ := xsnt
+  constructor
+  · exact xs
+  · rintro (xt | xu)
+    · exact xnt xt
+    · exact xnu xu
 
 example : s ∩ (s ∪ t) = s := by
   sorry
