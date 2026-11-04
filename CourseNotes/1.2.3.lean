@@ -125,20 +125,30 @@ to a and to b, then a = b.
 theorem convergesTo_unique {s : ℕ → ℝ} {a b : ℝ}
     (sa : ConvergesTo s a) (sb : ConvergesTo s b) : a = b := by
   by_contra abne
-  have : |a - b| > 0 := by
-    sorry
+  have absabpos: |a - b| > 0 := by
+    apply abs_pos.mpr
+    apply sub_ne_zero.mpr
+    exact abne
   let ε := |a - b| / 2
   have εpos : ε > 0 := by
-    sorry
+    apply div_pos
+    · exact absabpos
+    · norm_num
   obtain ⟨Na, hNa⟩ := sa ε εpos
   obtain ⟨Nb, hNb⟩ := sb ε εpos
   let N := max Na Nb
   have absa : |s N - a| < ε := by
-    sorry
+    exact hNa N (le_max_left Na Nb)
   have absb : |s N - b| < ε := by
-    sorry
+    exact hNb N (le_max_right Na Nb)
   have : |a - b| < |a - b| := by
-    sorry
+    calc |a - b| = |a - s N + (s N - b)| := by ring_nf
+    _ ≤ |a - s N| + |s N - b| := abs_add_le (a - s N) (s N - b)
+    _ = |s N - a| + |s N - b| := by rw [abs_sub_comm (s N) a]
+    _ < ε + ε := add_lt_add absa absb
+    _ = |a - b| := by
+      show |a - b| / 2 + |a - b| / 2 = |a - b|
+      ring
   exact lt_irrefl _ this
 
 /-
