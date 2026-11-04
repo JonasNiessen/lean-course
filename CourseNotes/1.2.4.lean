@@ -90,7 +90,12 @@ example : (s \ t) \ u ⊆ s \ (t ∪ u) := by
     · exact xnu xu
 
 example : s ∩ (s ∪ t) = s := by
-  sorry
+  ext x
+  constructor
+  · rintro ⟨xs, _⟩
+    exact xs
+  · intro xs
+    exact ⟨xs, Or.inl xs⟩
 
 example : s ∪ s ∩ t = s := by
   sorry

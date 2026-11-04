@@ -65,8 +65,10 @@ variable
 Proof sketch: unfold the definition of `prodChartedSpace` (`atlas = image2 prod …`). -/
 lemma mem_atlas_prod_iff (f : OpenPartialHomeomorph (M × N) (ModelProd H H')) :
     f ∈ atlas (ModelProd H H') (M × N) ↔
-      ∃ φ ∈ atlas H M, ∃ ψ ∈ atlas H' N, f = φ.prod ψ := by
-  sorry
+      ∃ φ ∈ atlas H M, ∃ ψ ∈ atlas H' N, f = φ.prod ψ :=
+  -- `atlas (M × N) = image2 prod (atlas M) (atlas N)` by definition
+  ⟨fun ⟨φ, hφ, ψ, hψ, h⟩ ↦ ⟨φ, hφ, ψ, hψ, h.symm⟩,
+    fun ⟨φ, hφ, ψ, hψ, h⟩ ↦ ⟨φ, hφ, ψ, hψ, h.symm⟩⟩
 
 -- STATEMENT FROZEN
 /-- **Transition maps of product charts.**
@@ -76,7 +78,7 @@ lemma mem_atlas_prod_iff (f : OpenPartialHomeomorph (M × N) (ModelProd H H')) :
 Proof sketch: `OpenPartialHomeomorph.prod_symm` and `OpenPartialHomeomorph.prod_trans`. -/
 lemma prod_symm_trans_prod (φ φ' : OpenPartialHomeomorph M H) (ψ ψ' : OpenPartialHomeomorph N H') :
     (φ'.prod ψ').symm ≫ₕ (φ.prod ψ) = (φ'.symm ≫ₕ φ).prod (ψ'.symm ≫ₕ ψ) := by
-  sorry
+  rw [OpenPartialHomeomorph.prod_symm, OpenPartialHomeomorph.prod_trans]
 
 -- STATEMENT FROZEN
 /-- **Products of smooth maps are smooth.** If `e` and `e'` are `C^∞` (with `C^∞` inverse) in the
@@ -86,8 +88,8 @@ Proof sketch: `ContDiffOn.prodMap`, applied to `e` and `e'` and to their inverse
 match because `range (I.prod I') = range I ×ˢ range I'`. (Mathlib lemma: `contDiffGroupoid_prod`.) -/
 lemma prod_mem_contDiffGroupoid {e : OpenPartialHomeomorph H H} {e' : OpenPartialHomeomorph H' H'}
     (he : e ∈ contDiffGroupoid ∞ I) (he' : e' ∈ contDiffGroupoid ∞ I') :
-    e.prod e' ∈ contDiffGroupoid ∞ (I.prod I') := by
-  sorry
+    e.prod e' ∈ contDiffGroupoid ∞ (I.prod I') :=
+  contDiffGroupoid_prod he he'
 
 -- STATEMENT FROZEN
 /-- **Exercise 1.1, Part 1.** The product of two smooth manifolds, with the product atlas,
@@ -99,7 +101,17 @@ the `C^∞` groupoid (`StructureGroupoid.compatible` on `M` and `N`), so `prod_m
 finishes the proof. Do **not** use the instance `IsManifold.prod`. -/
 theorem isManifold_prod [IsManifold I ∞ M] [IsManifold I' ∞ N] :
     IsManifold (I.prod I') ∞ (M × N) := by
-  sorry
+  -- The transition maps of the product atlas lie in the `C^∞` groupoid.
+  have h : HasGroupoid (M × N) (contDiffGroupoid ∞ (I.prod I')) := by
+    refine ⟨fun {f g} hf hg ↦ ?_⟩
+    -- `f = φ × ψ` and `g = φ' × ψ'` are product charts
+    obtain ⟨φ, hφ, ψ, hψ, rfl⟩ := (mem_atlas_prod_iff f).1 hf
+    obtain ⟨φ', hφ', ψ', hψ', rfl⟩ := (mem_atlas_prod_iff g).1 hg
+    -- the transition map is the product of the transition maps of `M` and `N`
+    rw [prod_symm_trans_prod]
+    exact prod_mem_contDiffGroupoid ((contDiffGroupoid ∞ I).compatible hφ hφ')
+      ((contDiffGroupoid ∞ I').compatible hψ hψ')
+  exact { compatible := h.compatible }
 
 -- STATEMENT FROZEN
 /-- The exercise's special case: `M` is `m`-dimensional and `N` is `n`-dimensional
@@ -111,8 +123,8 @@ theorem isManifold_prod_euclidean {m n : ℕ}
     [IsManifold (𝓡 m) ∞ M]
     {N : Type*} [TopologicalSpace N] [ChartedSpace (EuclideanSpace ℝ (Fin n)) N]
     [IsManifold (𝓡 n) ∞ N] :
-    IsManifold ((𝓡 m).prod (𝓡 n)) ∞ (M × N) := by
-  sorry
+    IsManifold ((𝓡 m).prod (𝓡 n)) ∞ (M × N) :=
+  isManifold_prod
 
 end Product
 
@@ -133,8 +145,10 @@ Proof sketch: unfold the definition of `piChartedSpace`. -/
 lemma mem_atlas_pi_iff (f : OpenPartialHomeomorph (∀ i, M i) (ModelPi H)) :
     f ∈ atlas (ModelPi H) (∀ i, M i) ↔
       ∃ φ : ∀ i, OpenPartialHomeomorph (M i) (H i),
-        (∀ i, φ i ∈ atlas (H i) (M i)) ∧ f = OpenPartialHomeomorph.pi φ := by
-  sorry
+        (∀ i, φ i ∈ atlas (H i) (M i)) ∧ f = OpenPartialHomeomorph.pi φ :=
+  -- `atlas (Π i, M i) = pi '' (Set.pi univ (atlas (M i)))` by definition
+  ⟨fun ⟨φ, hφ, h⟩ ↦ ⟨φ, fun i ↦ hφ i trivial, h.symm⟩,
+    fun ⟨φ, hφ, h⟩ ↦ ⟨φ, fun i _ ↦ hφ i, h.symm⟩⟩
 
 -- STATEMENT FROZEN
 /-- **Transition maps of finite product charts** are the products of the transition maps.
@@ -144,7 +158,22 @@ Proof sketch: `ext` on source, `toFun` and `invFun`. Compare `PartialEquiv.pi_sy
 lemma pi_symm_trans_pi (φ φ' : ∀ i, OpenPartialHomeomorph (M i) (H i)) :
     (OpenPartialHomeomorph.pi φ').symm ≫ₕ OpenPartialHomeomorph.pi φ =
       OpenPartialHomeomorph.pi (fun i ↦ (φ' i).symm ≫ₕ φ i) := by
-  sorry
+  apply OpenPartialHomeomorph.toPartialEquiv_injective
+  simp [OpenPartialHomeomorph.pi]
+
+/-- Helper: if each `f i` is `C^∞` on `s i` when read in the model `I i`, then `Π i, f i` is `C^∞`
+on `Π i, s i` when read in the product model `ModelWithCorners.pi I`. -/
+private lemma contDiffOn_pi_model {f : ∀ i, H i → H i} {s : ∀ i, Set (H i)}
+    (h : ∀ i, ContDiffOn ℝ ∞ (I i ∘ f i ∘ (I i).symm) ((I i).symm ⁻¹' s i ∩ range (I i))) :
+    ContDiffOn ℝ ∞
+      (ModelWithCorners.pi I ∘ (fun (x : ModelPi H) i ↦ f i (x i)) ∘ (ModelWithCorners.pi I).symm)
+      ((ModelWithCorners.pi I).symm ⁻¹' Set.pi univ s ∩ range (ModelWithCorners.pi I)) := by
+  -- a map into a product is `C^∞` iff every component is
+  refine contDiffOn_pi.2 fun i ↦ ?_
+  -- the `i`-th component is `(I i ∘ f i ∘ (I i).symm) ∘ (projection to the `i`-th factor)`
+  refine (h i).comp (ContinuousLinearMap.proj (R := ℝ) (φ := E) i).contDiff.contDiffOn ?_
+  rintro x ⟨hxs, y, rfl⟩
+  exact ⟨hxs i trivial, y i, rfl⟩
 
 -- STATEMENT FROZEN
 /-- **Finite products of smooth maps are smooth.**
@@ -154,8 +183,9 @@ Also uses `range (ModelWithCorners.pi I) = Set.pi univ (fun i ↦ range (I i))`.
 lemma pi_mem_contDiffGroupoid {e : ∀ i, OpenPartialHomeomorph (H i) (H i)}
     (he : ∀ i, e i ∈ contDiffGroupoid ∞ (I i)) :
     (OpenPartialHomeomorph.pi e : OpenPartialHomeomorph (ModelPi H) (ModelPi H)) ∈
-      contDiffGroupoid ∞ (ModelWithCorners.pi I) := by
-  sorry
+      contDiffGroupoid ∞ (ModelWithCorners.pi I) :=
+  -- both `Π e i` and its inverse `Π (e i)⁻¹` are `C^∞` in the model
+  ⟨contDiffOn_pi_model fun i ↦ (he i).1, contDiffOn_pi_model fun i ↦ (he i).2⟩
 
 -- STATEMENT FROZEN
 /-- **Finite products of smooth manifolds are smooth manifolds.** (Not in mathlib.)
@@ -164,7 +194,15 @@ Proof sketch: same as `isManifold_prod`, using `mem_atlas_pi_iff`, `pi_symm_tran
 `pi_mem_contDiffGroupoid`. -/
 theorem isManifold_pi [∀ i, IsManifold (I i) ∞ (M i)] :
     IsManifold (ModelWithCorners.pi I) ∞ (∀ i, M i) := by
-  sorry
+  have h : HasGroupoid (∀ i, M i) (contDiffGroupoid ∞ (ModelWithCorners.pi I)) := by
+    refine ⟨fun {f g} hf hg ↦ ?_⟩
+    -- `f = Π φ i` and `g = Π φ' i` are product charts
+    obtain ⟨φ, hφ, rfl⟩ := (mem_atlas_pi_iff f).1 hf
+    obtain ⟨φ', hφ', rfl⟩ := (mem_atlas_pi_iff g).1 hg
+    -- the transition map is the product of the transition maps of the factors
+    rw [pi_symm_trans_pi]
+    exact pi_mem_contDiffGroupoid fun i ↦ (contDiffGroupoid ∞ (I i)).compatible (hφ i) (hφ' i)
+  exact { compatible := h.compatible }
 
 end Pi
 
@@ -190,15 +228,17 @@ instance : Fact (Module.finrank ℝ (EuclideanSpace ℝ (Fin 2)) = 1 + 1) :=
 Proof sketch: holds by definition (`EuclideanSpace.instChartedSpaceSphere`). -/
 lemma atlas_S1 :
     atlas (EuclideanSpace ℝ (Fin 1)) S1 = range (fun v : S1 ↦ stereographic' 1 v) := by
-  sorry
+  ext f
+  exact ⟨fun ⟨v, h⟩ ↦ ⟨v, h.symm⟩, fun ⟨v, h⟩ ↦ ⟨v, h.symm⟩⟩
 
 -- STATEMENT FROZEN
 /-- **From the lecture:** the stereographic atlas makes `S¹` a smooth 1-manifold.
 
 Proof sketch: mathlib already has this (`EuclideanSpace.instIsManifoldSphere`, even analytic `ω`).
 `inferInstance` is fine here. -/
-lemma isManifold_S1 : IsManifold (𝓡 1) ∞ S1 := by
-  sorry
+lemma isManifold_S1 : IsManifold (𝓡 1) ∞ S1 :=
+  -- mathlib: the sphere is even analytic (`ω`), and `ω`-manifolds are `C^∞`-manifolds
+  inferInstance
 
 -- STATEMENT FROZEN
 /-- **Exercise 1.1, Part 2.** The `n`-torus, with the product of stereographic atlases,
@@ -206,8 +246,10 @@ is a smooth `n`-manifold.
 
 Proof sketch: `isManifold_pi` with `isManifold_S1` for every factor. -/
 theorem isManifold_torus (n : ℕ) :
-    IsManifold (ModelWithCorners.pi fun _ : Fin n ↦ 𝓡 1) ∞ (Torus n) := by
-  sorry
+    IsManifold (ModelWithCorners.pi fun _ : Fin n ↦ 𝓡 1) ∞ (Torus n) :=
+  -- every factor `S¹` is smooth, so the finite product is smooth
+  have := isManifold_S1
+  isManifold_pi
 
 end Torus
 
