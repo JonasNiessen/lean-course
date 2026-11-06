@@ -98,10 +98,18 @@ example : s ∩ (s ∪ t) = s := by
     exact ⟨xs, Or.inl xs⟩
 
 example : s ∪ s ∩ t = s := by
-  sorry
+  ext x
+  constructor
+  · rintro (xs | ⟨xs,xt⟩)
+    · exact xs
+    · exact xs
+  · intro xs
+    exact Or.inl xs
 
 example : s \ t ∪ t = s ∪ t := by
-  sorry
+  ext x
+  constructor
+  · rintro ⟨⟩
 
 example : (s ∪ t)ᶜ = sᶜ ∩ tᶜ := by
   sorry
